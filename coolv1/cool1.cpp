@@ -60,7 +60,7 @@ void coolAutoSendRequest(char **args) {
 
 void coolResponseHandle(int status, std::string reason, const char *resStr) {
     if(status != 200) {
-        rapidjson::Document response(rapidjson::kObjectType);
+        rapidjson::Document response;
         response.Parse(resStr);
         if(response.HasParseError()){
             std::cout<<"\nError in parse response\n";
@@ -99,8 +99,8 @@ void coolResponseHandle(int status, std::string reason, const char *resStr) {
         }
     }
     else {
-        std::cout<<"\nSuccessful Request Made";
-        std::cout<<"\nResponse : "<<status<<" : "<<reason<<"\n-----------\n"<<resStr<<"\n";
+        std::cout<<"\nResponse : "<<status<<" : "<<reason<<"\n-----------\n"<<resStr;
+        std::cout<<"\n\nSuccessful Request Made\n";
     }
 }
 
