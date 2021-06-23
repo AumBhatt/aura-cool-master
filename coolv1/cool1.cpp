@@ -39,15 +39,16 @@ void coolAutoSendRequest(char **args) {
             path = '/';
         }
 
-        Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_POST, path, Poco::Net::HTTPMessage::HTTP_1_1);
+        Poco::Net::HTTPRequest req(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         session.sendRequest(req);
 
         Poco::Net::HTTPResponse res;
-        std::cout<<res.getStatus()<<" "<<res.getReason()<<std::endl<<"Response:\n";
+        std::cout<<res.getStatus()<<" "<<res.getReason()<<std::endl;
 
         std::istream &is = session.receiveResponse(res);
+        /* std::cout<<"Response:\n";
         Poco::StreamCopier::copyStream(is, std::cout);
-        std::cout<<std::endl;
+        std::cout<<std::endl; */
         std::stringstream ss;
         Poco::StreamCopier::copyStream(is, ss);
         coolResponseHandle(res.getStatus(), res.getReason(), ss.str().c_str());
@@ -59,8 +60,12 @@ void coolAutoSendRequest(char **args) {
 
 void coolResponseHandle(int status, std::string reason, const char *resStr) {
     if(status != 200) {
-        rapidjson::Document response;
+        rapidjson::Document response(rapidjson::kObjectType);
         response.Parse(resStr);
+        if(response.HasParseError()){
+            std::cout<<"\nError in parse response\n";
+            return;
+        }
         if (response.HasMember("error")) {
             rapidjson::Value& error = response["error"];
             std::string errStr = "";
@@ -84,6 +89,9 @@ void coolResponseHandle(int status, std::string reason, const char *resStr) {
                     break;
                 case 501:
                     break;
+                default:
+                    errStr = "Internal Server Error";
+                    break;
             }
             std::cout<<"\nError State:\n-------------";
             std::cout<<"\n\t"<<status<<" : "<<reason;
@@ -92,7 +100,7 @@ void coolResponseHandle(int status, std::string reason, const char *resStr) {
     }
     else {
         std::cout<<"\nSuccessful Request Made";
-        std::cout<<"\nResponse : \n-----------\n"<<resStr<<std::endl;
+        std::cout<<"\nResponse : "<<status<<" : "<<reason<<"\n-----------\n"<<resStr<<"\n";
     }
 }
 
