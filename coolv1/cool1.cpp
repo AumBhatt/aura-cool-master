@@ -22,12 +22,18 @@ void coolAutoSendRequest(char **args) {
 
     // GET /v2.0/device/<Device_SN>/ls2<&UID_optional> HTTP/1.1
 
-    std::string device_sn = args[1], command = args[2], uid = "";
-    if(args[3]) {
-        uid = args[3];
+    std::string version = args[1], device_sn = args[2], command = args[3], uid = "";
+    if(args[4]) {
+        uid = args[4];
     }
 
-    std::string reqStr = "http://localhost:3000/v2.0/device/" + device_sn + "/" + command + "&" + uid;
+    std::string reqStr = "http://localhost:3000/" + version + "/device/" + device_sn + "/";
+    if(strcmp(version.c_str(), "v1.0") == 0) {
+        reqStr += ("raw?command=" + command + "&" + uid);
+    }
+    else if(strcmp(version.c_str(), "v2.0") == 0) {
+        reqStr += (command + "&" + uid);
+    }
     std::cout<<"\nURI Endpoint : "<<reqStr<<std::endl;
 
     try {
@@ -43,7 +49,7 @@ void coolAutoSendRequest(char **args) {
         session.sendRequest(req);
 
         Poco::Net::HTTPResponse res;
-        std::cout<<res.getStatus()<<" "<<res.getReason()<<std::endl;
+        // std::cout<<"Server Response: "<<res.getStatus()<<" "<<res.getReason()<<std::endl;
 
         std::istream &is = session.receiveResponse(res);
         /* std::cout<<"Response:\n";
@@ -93,14 +99,16 @@ void coolResponseHandle(int status, std::string reason, const char *resStr) {
                     errStr = "Internal Server Error";
                     break;
             }
-            std::cout<<"\nError State:\n-------------";
-            std::cout<<"\n\t"<<status<<" : "<<reason;
-            std::cout<<"\n\t"<<error.GetString()<< " : "<<errStr;
+            std::cout<<"\nHVAC Error State: \t\n~~~~~~~~~~~~~~~~~~\n\t"<<status<<" : "<<reason<<"\n________________________________________\n";
+            //std::cout<<"\n\t"<<status<<" : "<<reason;
+            std::cout<<"\n"<<error.GetString()<< " : "<<errStr<<"\n________________________________________\n";
+            
         }
     }
     else {
-        std::cout<<"\nResponse : "<<status<<" : "<<reason<<"\n-----------\n"<<resStr;
-        std::cout<<"\n\nSuccessful Request Made\n";
+        std::cout<<"\nHVAC Response: \t\n~~~~~~~~~~~~~~~~~~\n\t"<<status<<" : "<<reason<<"\n__________________________\n";
+        std::cout<<resStr<<"\n__________________________\n";
+        std::cout<<"Successful Request Made\n";
     }
 }
 

@@ -6,63 +6,74 @@ let statusCode, statusMessage;
 let responseBody = {
     "error" : ""
 };
-let devices = [ '283B96002128' ];
-let v2_commands = [ 'ls2' ];
+let devices = '283B96002128';
+let v2_commands = 'ls2';
 
 app.all('/*', (req, res) => {
     const url = req.url.split("/");
-    if(req.method !== 'GET') {
+    var command = url[4].split('&')[0];
+/*     console.log( url[1] === 'v2.0' && command !== v2_commands)
+    console.log("New Request :" + req.url + " : " + req.method);
+    console.log(url) */
+    //res.setHeader('Content-Type', "plain/text");
+
+    if(req.method != 'GET') {
         statusCode = 405;
         statusMessage = "Method Not Allowed";
         responseBody["error"] = "Wrong HTTP Method";
+        sendRequest(res);
     }
-    else if(url[1] !== 'v1.0' && url[1] !== 'v2.0') {
+    if(url[1] !== 'v1.0' && url[1] !== 'v2.0') {
         statusCode = 400;
         statusMessage = "Bad Request";
         responseBody["error"] = "Wrong API Version";
+        sendRequest(res);
     }
-    else if(url[2] !== 'device'){
+    if(url[2] !== 'device'){
         statusCode = 404;
         statusMessage = "Not Found";
         responseBody["error"] = "Wrong URI";
+        sendRequest(res);
     }
-    else if(url[1] == 'v1.0' && url[5].match(raw/g)) {
+    if(url[1] == 'v1.0' && url[4].match(raw/g)) {
         statusCode = 400;
         statusMessage = "Bad Request";
         responseBody["error"] = "Wrong v1 route";
+        sendRequest(res);
     }
-    else if(url[1] == 'v2.0') {
-        // to include 'Wrong v2 route'
-        var command = url[4].split('&')[0];
-        if(!v2_commands.find(el => el === command)) {
-            statusCode = 501;
-            statusMessage = "Not Implemented";
-            responseBody["error"] = "Unsupported V2.x command";
-        }
-        else {
-            statusCode = 200;
-            statusMessage = "OK";
-            responseBody = "noerror";
-        }
-    }
-    else if(!devices.includes(url[3])) {
+    if(devices !== url[3]) {
+        console.log("hi")
         statusCode = 403;
         statusMessage = "Forbidden";
         responseBody["error"] = "Wrong Device";
+        sendRequest(res);
     }
     else {
         statusCode = 200;
         statusMessage = "OK";
-        responseBody = "noerror";
+        responseBody["error"] = "noerror";
+        sendRequest(res);
     }
-    console.log("New Request")
-    res.status(statusCode);
-    res.setHeader('content-type', 'application/json');
-    res.statusMessage = statusMessage;
-    if(responseBody["error"] === "noerror") {
-        res.json(responseBody);
+    if(url[1] === 'v2.0' && command !== v2_commands) {
+        // to include 'Wrong v2 route'
+        statusCode = 501;
+        statusMessage = "Not Implemented";
+        responseBody["error"] = "Unsupported V2.x command";
+        sendRequest(res);
+    }
+    else {
+        statusCode = 200;
+        statusMessage = "OK";
+        responseBody["error"] = "noerror";
+        sendRequest(res);
     }
 });
+
+function sendRequest(res) {
+    if(responseBody["error"] !== 'noerror')
+        responseBody = ' ';
+    res.writeHead(statusCode, statusMessage).send(`${responseBody}`).end();
+}
 
 app.listen(port, () => {
     console.log(`Listening @ http://localhost:${port}`);
