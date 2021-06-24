@@ -26,7 +26,8 @@ function getResponse(method, url) {
         }
     };
 
-    let commands = ['ls2'];
+    let v2commands = ['ls2'];
+    let v1commands = ['on'];
     let devices = ['283B96002128']
 // [ '', 'v2.0', 'device', '283B96002128', 'ls2&L1_100' ]
     switch(true) {
@@ -36,14 +37,17 @@ function getResponse(method, url) {
         case (url[1] !== 'v1.0' && url[1] != 'v2.0'):
             return new response(400, 'Bad Request', 'Wrong API Version');
         
-        case (url[1] === 'v1.0' && url[4].search("raw?command") === -1):
+        case (url[1] === 'v1.0' && url[4].search(/raw/i) === -1):
             return new response(400, 'Bad Request', 'Wrong v1 route');
 
 /*         case (url[1] === 'v2.0' && url[4].search("") === -1):
             return new response(400, 'Bad Request', 'Wrong v1 route'); */
 
-        case (url[1] === 'v2.0' && commands.findIndex(el => el === url[4].split('&')[0]) === -1):
+        case (url[1] === 'v2.0' && v2commands.findIndex(el => el === url[4].split('&')[0]) === -1):
             return new response(501, 'Not Implemented', 'Unsupported V2.x command');
+        
+        case (url[1] === 'v1.0' && v1commands.findIndex(el => el === url[4].split('=')[1].split('&')[0]) === -1):
+            return new response(501, 'Not Implemented', 'Unsupported V1.x command');
         
         case (url[2] !== 'device'):
             return new response(404, 'Not Found', 'Wrong URI');
