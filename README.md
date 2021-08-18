@@ -1,6 +1,6 @@
 # <p align="center"> CoolMaster® Automation </p>
 
-###### Current Version : `coolv1 / cool1.cpp`
+###### Current Version : `coolv1 / cool1.cpp` <p align="right">Docs: https://github.com/AumBhatt/aura-cool-master/raw/main/CoolMasterNet-REST-API-spec.pdf</p>
 
 #### Important : IP-Address is HARD-CODED as of now.
 
